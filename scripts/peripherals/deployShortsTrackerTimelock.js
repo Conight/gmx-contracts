@@ -10,33 +10,29 @@ const { getArgumentForSignature } = require("typechain");
 
 const network = (process.env.HARDHAT_NETWORK || 'mainnet');
 
-async function getAvaxValues() {
+async function getOP() {
   return {
     handlers: [
-      "0x02270A816FCca45cE078C8b3De0346Eebc90B227", // X Shorts Tracker Keeper
+      "0xNotDeployed", // X Shorts Tracker Keeper
     ]
   }
 }
 
-async function getArbValues() {
+async function getTestnet() {
   return {
     handlers: [
-      "0x75f6250b9CeED446b2F25385832dF08DB45a90b0", // X Shorts Tracker Keeper
+      "0x7C14D748d1eAD29127318BbB643C240050878Fe7", // X Shorts Tracker Keeper
     ]
   }
 }
 
 async function getValues() {
-  if (network === "localhost") {
-    return await getLocalhostValues()
+  if (network === "op") {
+    return await getOP()
   }
 
-  if (network === "avax") {
-    return await getAvaxValues()
-  }
-
-  if (network === "arbitrum") {
-    return await getArbValues()
+  if (network === "testnet") {
+    return await getTestnet()
   }
 
   throw new Error("No values for network " + network)
@@ -45,7 +41,7 @@ async function getValues() {
 async function main() {
   const signer = await getFrameSigner()
 
-  const admin = "0x49B373D422BdA4C6BfCdd5eC1E48A9a26fdA2F8b"
+  const admin = "0x7C14D748d1eAD29127318BbB643C240050878Fe7"
   const { handlers } = await getValues()
 
   const buffer = 60 // 60 seconds

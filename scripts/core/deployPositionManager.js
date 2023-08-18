@@ -8,7 +8,7 @@ const tokens = require('./tokens')[network];
 
 const depositFee = 30 // 0.3%
 
-async function getArbValues(signer) {
+async function getOP(signer) {
   const vault = await contractAt("Vault", "0x489ee077994B6658eAfA855C308275EAd8097C4A", signer)
   const timelock = await contractAt("Timelock", await vault.gov(), signer)
   const router = await contractAt("Router", await vault.router(), signer)
@@ -43,13 +43,13 @@ async function getArbValues(signer) {
   return { vault, timelock, router, shortsTracker, weth, depositFee, orderBook, referralStorage, orderKeepers, liquidators, partnerContracts }
 }
 
-async function getAvaxValues(signer) {
-  const vault = await contractAt("Vault", "0x9ab2De34A33fB459b538c43f251eB825645e8595")
+async function getTestnet(signer) {
+  const vault = await contractAt("Vault", "0xe84D177aC9F1815D34423Cb71b10490182E97252")
   const timelock = await contractAt("Timelock", await vault.gov(), signer)
   const router = await contractAt("Router", await vault.router(), signer)
-  const shortsTracker = await contractAt("ShortsTracker", "0x9234252975484D75Fd05f3e4f7BdbEc61956D73a", signer)
+  const shortsTracker = await contractAt("ShortsTracker", "0x86e6e9ed0541219001196adf1Fe43B4D8c5EdEA5", signer)
   const weth = await contractAt("WETH", tokens.nativeToken.address)
-  const orderBook = await contractAt("OrderBook", "0x4296e307f108B2f583FF2F7B7270ee7831574Ae5")
+  const orderBook = await contractAt("OrderBook", "0x95821c7943dbfc1f6a44E19A7c31530CFd8A250D")
   const referralStorage = await contractAt("ReferralStorage", "0x827ed045002ecdabeb6e2b0d1604cf5fc3d322f8")
 
   const orderKeepers = [
@@ -66,12 +66,12 @@ async function getAvaxValues(signer) {
 }
 
 async function getValues(signer) {
-  if (network === "arbitrum") {
-    return getArbValues(signer)
+  if (network === "op") {
+    return getOP(signer)
   }
 
-  if (network === "avax") {
-    return getAvaxValues(signer)
+  if (network === "testnet") {
+    return getTestnet(signer)
   }
 }
 

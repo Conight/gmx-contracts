@@ -8,15 +8,15 @@ const tokens = require('./tokens')[network];
 const {
   ARBITRUM_URL,
   ARBITRUM_CAP_KEEPER_KEY,
-  AVAX_URL,
-  AVAX_CAP_KEEPER_KEY,
+  OPTIMISM_GOERLI_URL,
+  OPTIMISM_GOERLI_CAP_KEEPER_KEY,
 } = require("../../env.json")
 
-async function getArbValues(signer) {
+async function getOP(signer) {
   const provider = new ethers.providers.JsonRpcProvider(ARBITRUM_URL)
   const capKeeperWallet = new ethers.Wallet(ARBITRUM_CAP_KEEPER_KEY).connect(provider)
 
-  const vault = await contractAt("Vault", "0x489ee077994B6658eAfA855C308275EAd8097C4A")
+  const vault = await contractAt("Vault", "0xNotDeployed")
   const timelock = await contractAt("Timelock", await vault.gov(), signer)
   const router = await contractAt("Router", await vault.router(), signer)
   const weth = await contractAt("WETH", tokens.nativeToken.address)
@@ -41,17 +41,17 @@ async function getArbValues(signer) {
   }
 }
 
-async function getAvaxValues(signer) {
-  const provider = new ethers.providers.JsonRpcProvider(AVAX_URL)
-  const capKeeperWallet = new ethers.Wallet(AVAX_CAP_KEEPER_KEY).connect(provider)
+async function getTestnet(signer) {
+  const provider = new ethers.providers.JsonRpcProvider(OPTIMISM_GOERLI_URL)
+  const capKeeperWallet = new ethers.Wallet(OPTIMISM_GOERLI_CAP_KEEPER_KEY).connect(provider)
 
-  const vault = await contractAt("Vault", "0x9ab2De34A33fB459b538c43f251eB825645e8595")
+  const vault = await contractAt("Vault", "0xe84D177aC9F1815D34423Cb71b10490182E97252")
   const timelock = await contractAt("Timelock", await vault.gov(), signer)
   const router = await contractAt("Router", await vault.router(), signer)
   const weth = await contractAt("WETH", tokens.nativeToken.address)
   const referralStorage = await contractAt("ReferralStorage", "0x827ED045002eCdAbEb6e2b0d1604cf5fC3d322F8")
-  const shortsTracker = await contractAt("ShortsTracker", "0x9234252975484D75Fd05f3e4f7BdbEc61956D73a", signer)
-  const shortsTrackerTimelock = await contractAt("ShortsTrackerTimelock", "0xf58eEc83Ba28ddd79390B9e90C4d3EbfF1d434da", signer)
+  const shortsTracker = await contractAt("ShortsTracker", "0x86e6e9ed0541219001196adf1Fe43B4D8c5EdEA5", signer)
+  const shortsTrackerTimelock = await contractAt("ShortsTrackerTimelock", "0x464d813E84C7704D351a3E6B40123B8472805c3e", signer)
   const depositFee = "30" // 0.3%
   const minExecutionFee = "20000000000000000" // 0.02 AVAX
 
@@ -70,12 +70,12 @@ async function getAvaxValues(signer) {
 }
 
 async function getValues(signer) {
-  if (network === "arbitrum") {
-    return getArbValues(signer)
+  if (network === "op") {
+    return getOP(signer)
   }
 
-  if (network === "avax") {
-    return getAvaxValues(signer)
+  if (network === "testnet") {
+    return getTestnet(signer)
   }
 }
 
@@ -95,19 +95,20 @@ async function main() {
     referralStorage
   } = await getValues(signer)
 
-  const positionUtils = await deployContract("PositionUtils", [])
+  // const positionUtils = await deployContract("PositionUtils", [])
+  const positionUtils = await contractAt("PositionUtils", "0x40BAD393a7910033487466B4e2d1727389202e2A");
 
-  const referralStorageGov = await contractAt("Timelock", await referralStorage.gov(), signer)
+  // const referralStorageGov = await contractAt("Timelock", await referralStorage.gov(), signer)
 
   const positionRouterArgs = [vault.address, router.address, weth.address, shortsTracker.address, depositFee, minExecutionFee]
   const positionRouter = await deployContract("PositionRouter", positionRouterArgs, "PositionRouter", {
       libraries: {
-        PositionUtils: positionUtils.address
+        "contracts/core/PositionUtils.sol:PositionUtils": positionUtils.address
       }
   })
 
-  await sendTxn(positionRouter.setReferralStorage(referralStorage.address), "positionRouter.setReferralStorage")
-  await sendTxn(referralStorageGov.signalSetHandler(referralStorage.address, positionRouter.address, true), "referralStorage.signalSetHandler(positionRouter)")
+  // await sendTxn(positionRouter.setReferralStorage(referralStorage.address), "positionRouter.setReferralStorage")
+  // await sendTxn(referralStorageGov.signalSetHandler(referralStorage.address, positionRouter.address, true), "referralStorage.signalSetHandler(positionRouter)")
 
   await sendTxn(shortsTrackerTimelock.signalSetHandler(positionRouter.address, true), "shortsTrackerTimelock.signalSetHandler(positionRouter)")
 
