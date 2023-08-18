@@ -1,5 +1,5 @@
 require("@nomiclabs/hardhat-waffle");
-require("@nomiclabs/hardhat-etherscan");
+require("@nomicfoundation/hardhat-verify");
 require("hardhat-contract-sizer");
 require("@typechain/hardhat");
 
@@ -50,13 +50,13 @@ module.exports = {
     hardhat: {
       allowUnlimitedContractSize: true,
     },
-    op: {
+    optimisticEthereum: {
       url: OPTIMISM_URL,
       chainId: 10,
       gasPrice: 1000000,
       accounts: [OPTIMISM_DEPLOY_KEY],
     },
-    testnet: {
+    optimisticGoerli: {
       url: OPTIMISM_GOERLI_URL,
       chainId: 420,
       gasPrice: 100,
@@ -65,7 +65,8 @@ module.exports = {
   },
   etherscan: {
     apiKey: {
-      op: OPTIMISM_API_KEY,
+      optimisticEthereum: OPTIMISM_API_KEY,
+      optimisticGoerli: OPTIMISM_API_KEY,
     },
   },
   solidity: {
